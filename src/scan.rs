@@ -11,13 +11,13 @@ pub struct Scan {
     pub lines: Vec<Line>,
 }
 
-pub fn scan_drive(drive: &str, extensions: Vec<&str>, keywords: Vec<&str>) -> Scan {
+pub fn scan_drive(drive: &str, extensions: Vec<&str>, keywords: Vec<&str>, forbidden_dirs: Vec<&str>) -> Scan {
     let mut scan = Scan { lines: vec![] };
-    scan_dir(&mut scan, drive, &extensions, &keywords).unwrap();
+    scan_dir(&mut scan, drive, &extensions, &keywords, &forbidden_dirs).unwrap();
     scan
 }
 
-fn scan_dir(scan: &mut Scan, dir: &str, extensions: &Vec<&str>, keywords: &Vec<&str>) -> std::io::Result<()> {
+fn scan_dir(scan: &mut Scan, dir: &str, extensions: &Vec<&str>, keywords: &Vec<&str>, forbidden_dirs: &Vec<&str>) -> std::io::Result<()> {
     let paths = fs::read_dir(dir)?;
     for path in paths {
         match path {
@@ -25,7 +25,12 @@ fn scan_dir(scan: &mut Scan, dir: &str, extensions: &Vec<&str>, keywords: &Vec<&
                 match path.file_type() {
                     Ok(kind) => {
                         if kind.is_dir() {
-                            let _ = scan_dir(scan, path.path().to_str().unwrap(), extensions, keywords);
+                            let dir = path.path();
+                            let dir_name = dir.file_name().unwrap().to_str().unwrap();
+                            let dir = dir.to_str().unwrap();
+                            if !forbidden_dirs.contains(&dir_name) {
+                                let _ = scan_dir(scan, dir, extensions, keywords, forbidden_dirs);
+                            }
                         } else if kind.is_file() {
                             let path = path.path();
                             match path.extension() {
@@ -58,6 +63,7 @@ fn scan_file(scan: &mut Scan, path: PathBuf, keywords: &Vec<&str>, filetype: Str
                 for line in file.split("\n") {
                     for keyword in keywords {
                         if line.contains(keyword) {
+                            println!("found {} in {}", keyword, filename);
                             scan.lines.push(Line { file: filename.clone(), contents: line.to_string(), keyword: keyword.to_string(), filetype: filetype.clone() });
                         }
                     }
