@@ -6,5 +6,5 @@ This thing scans files in a drive for keywords and then sends what it finds to v
 
 ## Todo
 - [x] Add webhook sending
-- [ ] Add searching files
+- [x] Add searching files
 - [ ] Add self destruct
