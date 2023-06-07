@@ -6,3 +6,4 @@ This thing scans files in a drive for keywords and then sends what it finds via 
 
 ## Notes
 I have not tested this on anything other than my own computer so it might do some weird stuff.
+Don't use this to do anything illegal or not cool.
